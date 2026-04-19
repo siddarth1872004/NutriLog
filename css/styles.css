@@ -387,6 +387,12 @@ body {
 .water-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--r); padding:var(--pad); position:relative; }
 .water-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; position:relative; z-index:1; }
 .water-text { font-size:.78rem; color:var(--water); font-family:'DM Mono',monospace; font-weight:600; }
+.water-goal-wrap { display:flex; align-items:center; gap:6px; }
+.water-goal-btn {
+  border:1px solid var(--border2); background:var(--bg3); color:var(--text2);
+  font-size:.62rem; padding:2px 8px; border-radius:999px; cursor:pointer; transition:var(--trans);
+}
+.water-goal-btn:hover { border-color:var(--water); color:var(--water); background:var(--water-soft); }
 
 /* Wave container */
 .water-wave-wrap { position:relative; height:54px; margin:0 -16px; overflow:hidden; margin-bottom:10px; }
@@ -413,15 +419,22 @@ body {
 .water-btns {
   display:grid;
   gap:6px;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
+  grid-template-columns:repeat(3, minmax(88px, 1fr));
+  align-items:stretch;
 }
-.water-btns button { min-width:0; background:var(--bg3); border:1px solid var(--border); color:var(--text2); padding:7px 8px; border-radius:var(--r-sm); font-size:.71rem; font-family:inherit; cursor:pointer; transition:var(--trans); }
+.water-btns button { min-width:0; white-space:nowrap; background:var(--bg3); border:1px solid var(--border); color:var(--text2); padding:8px 8px; border-radius:var(--r-sm); font-size:.71rem; font-family:inherit; cursor:pointer; transition:var(--trans); }
 .water-btns button:hover { border-color:var(--water); color:var(--water); background:var(--water-soft); transform:translateY(-1px); }
 .water-btns button:disabled { opacity:.45; cursor:not-allowed; transform:none; border-color:var(--border); color:var(--text3); background:var(--bg3); }
 .water-btn-custom { grid-column:auto; }
 @media (max-width:640px) {
   .water-btns { grid-template-columns:repeat(2, minmax(0, 1fr)); }
 }
+
+.cri-edit-btn {
+  margin-left:8px; border:1px solid var(--border2); background:var(--bg3); color:var(--text2);
+  border-radius:999px; font-size:.62rem; padding:2px 8px; cursor:pointer; transition:var(--trans);
+}
+.cri-edit-btn:hover { border-color:var(--accent); color:var(--accent2); }
 
 /* ══════════════════════════════════════════════════════
    BODY WEIGHT CARD

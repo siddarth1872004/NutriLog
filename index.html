@@ -163,7 +163,10 @@
     <div class="water-card">
       <div class="water-header">
         <span class="section-label">💧 Water</span>
-        <span id="waterText" class="water-text">0L / 2.5L</span>
+        <div class="water-goal-wrap">
+          <span id="waterText" class="water-text">0L / 2.5L</span>
+          <button id="editWaterGoalBtn" class="water-goal-btn" title="Set water goal">Goal</button>
+        </div>
       </div>
       <div class="water-wave-wrap" id="waterWaveWrap">
         <div class="water-wave-bg" id="waterWaveBg"></div>
@@ -256,6 +259,7 @@
           <div class="cri-row">
             <span class="cri-label">Goal</span>
             <span class="cri-val cri-goal" id="criGoal">2000 kcal</span>
+            <button id="editGoalsQuickBtn" class="cri-edit-btn" title="Edit calories/macros goals">Edit</button>
           </div>
           <div class="cri-row">
             <span class="cri-label">Eaten</span>

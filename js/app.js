@@ -884,9 +884,18 @@ function resetWater() {
   if (!waterMl) return;
   addWater(-waterMl);
 }
+function setWaterGoalQuick() {
+  const next = parseInt(prompt('Set daily water goal (ml):', String(waterGoal)));
+  if (!Number.isFinite(next)) return;
+  waterGoal = Math.max(100, next);
+  localStorage.setItem('nutrilog_watergoal', waterGoal);
+  updateWaterUI();
+  showToast(`Water goal set to ${(waterGoal/1000).toFixed(1).replace(/\.0$/,'')}L`);
+}
 g('waterCustom')?.addEventListener('click', addCustomWater);
 g('waterUndoBtn')?.addEventListener('click', undoWater);
 g('waterResetBtn')?.addEventListener('click', resetWater);
+g('editWaterGoalBtn')?.addEventListener('click', setWaterGoalQuick);
 
 /* ══════════════════════════════════════════════════════
    CALORIES BURNED
@@ -1086,6 +1095,7 @@ window.jumpToHistDay=jumpToHistDay;
    GOALS MODAL + TDEE
 ══════════════════════════════════════════════════════ */
 g('goalsBtn')?.addEventListener('click',openGoalsModal);
+g('editGoalsQuickBtn')?.addEventListener('click', openGoalsModal);
 g('closeGoalsModal')?.addEventListener('click',()=>g('goalsModal')?.classList.remove('open'));
 g('goalsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)e.currentTarget.classList.remove('open');});
 function openGoalsModal(){
