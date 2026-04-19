@@ -101,6 +101,13 @@ function syncViewportUnit() {
 function initSplashScreen() {
   const splash = g('splashScreen');
   if (!splash) return;
+  const isMobile = window.matchMedia('(max-width: 640px)').matches;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (isMobile || reduceMotion) {
+    splash.remove();
+    document.body.classList.add('app-ready');
+    return;
+  }
   let done = false;
   const finish = () => {
     if (done) return;
@@ -109,9 +116,9 @@ function initSplashScreen() {
     splash.classList.add('hide');
     setTimeout(() => splash.remove(), 900);
   };
-  if (document.readyState === 'complete') setTimeout(finish, 2400);
-  else window.addEventListener('load', () => setTimeout(finish, 2400), { once: true });
-  setTimeout(finish, 5200);
+  if (document.readyState === 'complete') setTimeout(finish, 1800);
+  else window.addEventListener('load', () => setTimeout(finish, 1800), { once: true });
+  setTimeout(finish, 4200);
 }
 syncViewportUnit();
 initSplashScreen();
