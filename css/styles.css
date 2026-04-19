@@ -267,6 +267,11 @@ body.app-ready .app-main {
   .app-main { grid-template-columns:1fr; gap:0; padding:0; }
   .left-col, .right-col { display:none; padding:var(--pad); gap:var(--gap-sm,10px); }
   .left-col.active, .right-col.active { display:flex; flex-direction:column; overflow:visible; }
+  .search-card, .portion-card, .totals-card, .log-card, .water-card, .bodyweight-card {
+    width:100%;
+    min-width:0;
+    overflow-x:clip;
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1046,6 +1051,13 @@ body.app-ready .app-main {
   }
   .water-btns {
     grid-template-columns:1fr;
+  }
+  .mode-tabs {
+    min-width:0;
+  }
+  .mode-tab {
+    font-size:.75rem;
+    padding:7px 4px;
   }
 }
 

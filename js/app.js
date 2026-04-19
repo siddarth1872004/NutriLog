@@ -1507,6 +1507,7 @@ g('shortcutsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)
       if (name === 'more') openMoreSheet();
       return;
     }
+    if (name !== 'more') closeMoreSheet();
     document.querySelectorAll('.mob-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
     localStorage.setItem('nutrilog_mobile_tab', name);
     (panels[name] || (() => {}))();
@@ -1531,6 +1532,10 @@ g('shortcutsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)
       if (!isMobileUI()) {
         document.querySelector('.left-col')?.classList.add('active');
         document.querySelector('.right-col')?.classList.add('active');
+        closeMoreSheet();
+      } else {
+        const tab = localStorage.getItem('nutrilog_mobile_tab') || 'search';
+        activateTab(tab === 'more' ? 'search' : tab);
       }
     });
   }, { passive: true });
@@ -1713,42 +1718,28 @@ window.updateTotals = updateTotalsAnimated;
 ══════════════════════════════════════════════════════ */
 let swipeStart = null;
 document.addEventListener('touchstart', e => {
-  if (prefersReducedMotion()) return;
+  if (prefersReducedMotion() || !isMobileUI()) return;
   const entry = e.target.closest('.log-entry[data-id]');
   if (!entry) return;
-  swipeStart = { x: e.touches[0].clientX, id: parseInt(entry.dataset.id), el: entry };
+  swipeStart = {
+    x: e.touches[0].clientX,
+    y: e.touches[0].clientY,
+    id: parseInt(entry.dataset.id),
+    el: entry
+  };
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
-  if (prefersReducedMotion()) return;
+  if (prefersReducedMotion() || !isMobileUI()) return;
   if (!swipeStart) return;
   const dx = e.changedTouches[0].clientX - swipeStart.x;
-  if (dx < -80) {
+  const dy = e.changedTouches[0].clientY - swipeStart.y;
+  if (Math.abs(dy) < 24 && dx < -88) {
     // Swipe left to delete
     swipeStart.el.classList.add('deleting');
     setTimeout(() => deleteEntry(swipeStart.id), 180);
   }
   swipeStart = null;
-}, { passive: true });
-
-/* ══════════════════════════════════════════════════════
-   QOL: PULL TO REFRESH HINT (mobile)
-══════════════════════════════════════════════════════ */
-let pullStart = 0;
-window.addEventListener('touchstart', e => {
-  if (prefersReducedMotion()) return;
-  if (window.scrollY === 0) pullStart = e.touches[0].clientY;
-}, { passive: true });
-window.addEventListener('touchend', e => {
-  if (prefersReducedMotion()) return;
-  if (pullStart === 0) return;
-  const dy = e.changedTouches[0].clientY - pullStart;
-  if (dy > 80 && window.scrollY === 0) {
-    // Light haptic-style feedback
-    showToast('All data saved ✓');
-    saveAllState();
-  }
-  pullStart = 0;
 }, { passive: true });
 
 /* ══════════════════════════════════════════════════════
@@ -1772,14 +1763,13 @@ g('countInput')?.addEventListener('focus', function() { this.select(); });
 /* QoL: double-tap log entry to edit (only if no swipe) */
 let lastTap = 0;
 document.addEventListener('touchend', e => {
-  if (prefersReducedMotion()) return;
+  if (prefersReducedMotion() || !isMobileUI()) return;
   const entry = e.target.closest('.log-entry[data-id]');
   if (!entry) return;
   if (swipeStart) return; // swipe was in progress
   const now = Date.now();
   if (now - lastTap < 320) {
     const id = parseInt(entry.dataset.id);
-    e.preventDefault();
     editEntryPortion(id);
     lastTap = 0; return;
   }
