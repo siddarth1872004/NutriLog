@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="NutriLog">
+  <meta name="theme-color" content="#0e0f13">
+  <title>NutriLog</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-left">
+    <div class="logo">NutriLog</div>
+    <div id="dateBadge" class="date-badge"></div>
+    <div id="streakBadge" class="streak-badge" style="display:none"></div>
+    <div id="savedPulse" class="saved-pulse" title="Auto-saved">✓</div>
+  </div>
+  <div class="header-right">
+    <button id="themeBtn"      class="icon-btn" title="Toggle theme">☀</button>
+    <button id="shortcutsBtn"  class="icon-btn" title="Shortcuts (?)">⌨</button>
+    <button id="historyBtn"    class="icon-btn" title="History (H)">📅</button>
+    <button id="templatesBtn"  class="icon-btn" title="Meal Templates (T)">📋</button>
+    <button id="logWeightBtn"  class="icon-btn" title="Log body weight (W)">⚖</button>
+    <button id="goalsBtn"      class="icon-btn" title="Goals (G)">🎯 Goals</button>
+    <button id="memoryBtn"     class="memory-btn" title="NutriMemory (M)">
+      🧠 <span class="mem-label">Memory</span>
+      <span class="mem-badge" id="memoryCount">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="app-main">
+
+  <!-- ─── LEFT COL ─── -->
+  <section class="left-col">
+
+    <!-- Search -->
+    <div id="searchArea" class="search-card">
+      <div class="search-label-row">
+        <label class="section-label">Search Food</label>
+        <span class="search-tip"><kbd>/</kbd> focus · ↑↓ navigate · Enter select</span>
+      </div>
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input id="foodInput" type="text"
+            placeholder="chicken breast, idli, 'dal', oats…"
+            autocomplete="off" spellcheck="false" aria-label="Search food">
+          <button id="clearSearchBtn" class="clear-input-btn" title="Clear">✕</button>
+        </div>
+        <button id="searchBtn" class="search-btn">Search</button>
+      </div>
+      <!-- Category filter pills -->
+      <div id="searchFilterPills" class="search-filter-pills"></div>
+      <div id="suggestions" class="suggestions" role="listbox"></div>
+    </div>
+
+    <!-- Portion Card -->
+    <div id="portionCard" class="portion-card">
+      <div class="card-food-header">
+        <div class="card-food-info">
+          <div id="cardFoodName" class="card-food-name"></div>
+          <div id="cardFoodBase" class="card-food-base"></div>
+          <div id="cardServingInfo" class="card-serving-info"></div>
+        </div>
+        <div class="card-food-badges">
+          <span id="cardCustomTag" class="custom-badge" style="display:none">custom</span>
+          <span id="portionMemoryBadge" class="portion-memory-badge" style="display:none"
+            title="Last used portion restored">
+            ⏱ last portion
+            <button id="clearPortionMemoryBtn" title="Clear memory">✕</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="pending-bar-wrap">
+        <div id="pendingCalBar" class="pending-cal-bar"></div>
+      </div>
+
+      <div class="card-controls">
+        <div id="modeTabs" class="mode-tabs">
+          <button id="tabWeight" class="mode-tab active">⚖ Weight</button>
+          <button id="tabCount"  class="mode-tab">🔢 Count</button>
+        </div>
+        <select id="mealSelector" class="meal-select"></select>
+      </div>
+
+      <!-- Weight panel -->
+      <div id="weightPanel" class="input-panel">
+        <input id="portionInput" type="number" min="0" step="any" placeholder="Amount">
+        <select id="unitSelector"></select>
+      </div>
+
+      <!-- Preset buttons -->
+      <div id="presetBtns" class="preset-btns">
+        <span class="preset-label">Quick:</span>
+        <button data-preset="25">25g</button>
+        <button data-preset="50">50g</button>
+        <button data-preset="100">100g</button>
+        <button data-preset="150">150g</button>
+        <button data-preset="200">200g</button>
+        <button data-preset="300">300g</button>
+      </div>
+
+      <!-- Quick amount buttons -->
+      <div id="quickAmountBtns" class="quick-amount-btns"></div>
+
+      <!-- Count panel -->
+      <div id="countPanel" class="input-panel" style="display:none">
+        <input id="countInput" type="number" min="0" step="0.5" placeholder="Count">
+        <span id="countUnit" class="count-unit-label"></span>
+      </div>
+
+      <!-- Macro preview -->
+      <div class="macro-preview">
+        <div class="mp-cell mp-cal">  <div class="mp-val" id="mcal">0</div>  <div class="mp-lbl">kcal</div></div>
+        <div class="mp-cell mp-prot"> <div class="mp-val" id="mprot">0g</div> <div class="mp-lbl">protein</div></div>
+        <div class="mp-cell mp-carb"> <div class="mp-val" id="mcarb">0g</div> <div class="mp-lbl">carbs</div></div>
+        <div class="mp-cell mp-fat">  <div class="mp-val" id="mfat">0g</div>  <div class="mp-lbl">fat</div></div>
+      </div>
+
+      <!-- Nutrient detail -->
+      <div class="nutrient-detail">
+        <div class="nd-row">
+          <span class="nd-label" style="color:var(--prot)">Protein</span>
+          <span class="nd-kcal" id="detailCalProt"></span>
+          <span class="nd-pct"  id="detailProtPct"></span>
+          <span class="nd-goal">of daily goal</span>
+        </div>
+        <div class="nd-row">
+          <span class="nd-label" style="color:var(--carb)">Carbs</span>
+          <span class="nd-kcal" id="detailCalCarb"></span>
+          <span class="nd-pct"  id="detailCarbPct"></span>
+          <span class="nd-goal">of daily goal</span>
+        </div>
+        <div class="nd-row">
+          <span class="nd-label" style="color:var(--fat)">Fat</span>
+          <span class="nd-kcal" id="detailCalFat"></span>
+          <span class="nd-pct"  id="detailFatPct"></span>
+          <span class="nd-goal">of daily goal</span>
+        </div>
+      </div>
+
+      <div id="exceedWarn" class="exceed-warn" style="display:none"></div>
+
+      <div class="card-actions">
+        <button id="addLogBtn" class="add-btn">＋ Log Food <kbd class="btn-kbd">Ctrl↵</kbd></button>
+        <button id="compareBtn"     class="icon-action-btn" title="Compare with another food">⚖</button>
+        <button id="saveMemoryBtn"  class="icon-action-btn" title="Save to NutriMemory">🧠</button>
+      </div>
+    </div>
+
+    <!-- Water tracker -->
+    <div class="water-card">
+      <div class="water-header">
+        <span class="section-label">💧 Water</span>
+        <span id="waterText" class="water-text">0L / 2.5L</span>
+      </div>
+      <div class="water-wave-wrap" id="waterWaveWrap">
+        <div class="water-wave-bg" id="waterWaveBg"></div>
+        <div class="water-wave" id="waterWave1">
+          <svg viewBox="0 0 400 30" preserveAspectRatio="none"><path d="M0,15 C50,5 100,25 150,15 C200,5 250,25 300,15 C350,5 400,25 400,15 L400,30 L0,30 Z"/></svg>
+        </div>
+        <div class="water-wave" id="waterWave2">
+          <svg viewBox="0 0 400 30" preserveAspectRatio="none"><path d="M0,20 C60,10 120,28 180,18 C240,8 300,26 360,16 C380,12 390,18 400,15 L400,30 L0,30 Z"/></svg>
+        </div>
+        <span class="water-pct-text" id="waterPctText"></span>
+      </div>
+      <div id="waterGlasses" class="water-glasses"></div>
+      <div class="water-btns">
+        <button id="waterAdd250">+250ml</button>
+        <button id="waterAdd500">+500ml</button>
+        <button id="waterAdd750">+750ml</button>
+        <button id="waterCustom" class="water-btn-custom">+Custom</button>
+      </div>
+    </div>
+
+    <!-- Body weight widget -->
+    <div class="bodyweight-card">
+      <div class="bw-header">
+        <span class="section-label">⚖ Body Weight</span>
+        <button id="logWeightBtn2" class="bw-log-btn" onclick="document.getElementById('logWeightBtn').click()">Log</button>
+      </div>
+      <div class="bw-display">
+        <span id="weightDisplay" class="bw-val">—</span>
+        <span id="weightDiff" class="weight-diff"></span>
+      </div>
+      <canvas id="weightChart" width="280" height="70" class="weight-chart"></canvas>
+    </div>
+      <div class="timer-btns">
+        <button id="timerStartBtn" class="timer-btn">▶ Start</button>
+        <button id="timerResetBtn" class="timer-btn timer-btn-reset">↺ Reset</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ─── RIGHT COL ─── -->
+  <section class="right-col">
+
+    <!-- Totals -->
+    <div class="totals-card">
+      <!-- SVG gradient def (hidden) -->
+      <svg width="0" height="0" style="position:absolute">
+        <defs>
+          <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%"   stop-color="#6c63ff"/>
+            <stop offset="100%" stop-color="#4ecdc4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+
+      <div class="totals-header">
+        <div class="totals-header-left">
+          <span class="section-label">Today's Nutrition</span>
+          <span id="motivationMsg" class="motivation-msg"></span>
+        </div>
+        <div class="totals-header-right">
+          <!-- Exercise pill shows when calories burned > 0 -->
+          <div id="exercisePill" class="exercise-pill" style="display:none" title="Click × to remove exercise calories">
+            <span class="ep-icon">🔥</span>
+            <span class="ep-kcal" id="burnedPillText"></span>
+            <span class="ep-x" id="unlogBurnBtn" onclick="unlogBurn()" title="Remove exercise log">✕</span>
+          </div>
+          <div class="burn-btns">
+            <button id="burnBtn"     class="burn-btn" title="Log exercise calories burned">🔥 Exercise</button>
+            <button id="burnCalcBtn" class="burn-btn burn-calc-btn" title="Activity calculator">⚡ Calc</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calorie ring + info -->
+      <div class="cal-ring-section">
+        <div class="cal-ring-wrap">
+          <svg viewBox="0 0 90 90" width="90" height="90">
+            <circle class="cal-ring-track" cx="45" cy="45" r="39"/>
+            <circle class="cal-ring-fill" id="calRingFill" cx="45" cy="45" r="39"/>
+          </svg>
+          <div class="cal-ring-label">
+            <div class="cal-ring-num" id="calRingNum">0</div>
+            <div class="cal-ring-sub">kcal</div>
+          </div>
+        </div>
+        <div class="cal-ring-info">
+          <div class="cri-row">
+            <span class="cri-label">Goal</span>
+            <span class="cri-val cri-goal" id="criGoal">2000 kcal</span>
+          </div>
+          <div class="cri-row">
+            <span class="cri-label">Eaten</span>
+            <span class="cri-val cri-eaten" id="criEaten">0 kcal</span>
+          </div>
+          <div id="criBurnedRow" class="cri-row" style="display:none">
+            <span class="cri-label">Burned</span>
+            <span class="cri-val cri-burned" id="criBurned"></span>
+          </div>
+          <div class="cri-row">
+            <span class="cri-label" id="criRemLabel">Remaining</span>
+            <span class="cri-val cri-remaining" id="caloriesRemaining">2000 kcal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Macro mini bars -->
+      <div class="macro-mini-bars">
+        <div class="mmb-row">
+          <span class="mmb-label">Protein</span>
+          <div class="mmb-bar-wrap"><div id="mmbProt" class="mmb-bar mmb-prot" style="width:0%"></div></div>
+          <span class="mmb-vals"><span id="totalProt">0g</span> / <span id="goalProtLbl" class="cri-goal">150g</span></span>
+        </div>
+        <div class="mmb-row">
+          <span class="mmb-label">Carbs</span>
+          <div class="mmb-bar-wrap"><div id="mmbCarb" class="mmb-bar mmb-carb" style="width:0%"></div></div>
+          <span class="mmb-vals"><span id="totalCarb">0g</span> / <span id="goalCarbLbl" class="cri-goal">250g</span></span>
+        </div>
+        <div class="mmb-row">
+          <span class="mmb-label">Fat</span>
+          <div class="mmb-bar-wrap"><div id="mmbFat" class="mmb-bar mmb-fat" style="width:0%"></div></div>
+          <span class="mmb-vals"><span id="totalFat">0g</span> / <span id="goalFatLbl" class="cri-goal">65g</span></span>
+        </div>
+      </div>
+
+      <!-- Macro proportion -->
+      <div class="macro-prop-section">
+        <div class="macro-prop-label">
+          <span class="macro-prop-title">Macro Split</span>
+          <div class="bar-legend">
+            <span class="bl-prot">■ P</span>
+            <span class="bl-carb">■ C</span>
+            <span class="bl-fat">■ F</span>
+          </div>
+        </div>
+        <div class="macro-bar">
+          <div id="barProt" class="bar-seg bar-prot" style="width:0%"></div>
+          <div id="barCarb" class="bar-seg bar-carb" style="width:0%"></div>
+          <div id="barFat"  class="bar-seg bar-fat"  style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Hidden IDs needed by app.js for backward compat -->
+      <span id="totalCal"  style="display:none">0</span>
+      <span id="netCal"    style="display:none"></span>
+      <span id="goalPctCal"  style="display:none"></span>
+      <span id="goalPctProt" style="display:none"></span>
+      <span id="goalPctCarb" style="display:none"></span>
+      <span id="goalPctFat"  style="display:none"></span>
+      <span id="goalBarCal"  style="display:none"></span>
+      <span id="goalBarProt" style="display:none"></span>
+      <span id="goalBarCarb" style="display:none"></span>
+      <span id="goalBarFat"  style="display:none"></span>
+    </div>
+
+    <!-- Food Log -->
+    <div class="log-card">
+      <div class="log-header">
+        <span class="section-label">Food Log</span>
+        <div class="log-header-actions">
+          <div class="log-search-wrap">
+            <input id="logSearchInput" type="text" class="log-search" placeholder="Filter log…">
+          </div>
+          <button id="copyLogBtn"     class="log-action-btn" title="Copy log to clipboard">📋</button>
+          <button id="saveTemplateBtn" class="log-action-btn" title="Save as meal template (T)">💾</button>
+          <button id="clearLogBtn"    class="clear-btn" title="Clear log">🗑</button>
+        </div>
+      </div>
+      <div id="logEntries" class="log-entries"></div>
+    </div>
+
+  </section>
+</main>
+
+<!-- NUTRIMEMORY DRAWER -->
+<div id="memoryOverlay" class="drawer-overlay"></div>
+<aside id="memoryDrawer" class="memory-drawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">🧠 NutriMemory</h2>
+    <button id="closeMemory" class="drawer-close">✕</button>
+  </div>
+  <div class="drawer-search">
+    <input id="memorySearch" type="text" placeholder="Filter foods…" autocomplete="off">
+    <button class="add-custom-top-btn" onclick="openAddFoodModal('')">+ Custom Food</button>
+  </div>
+  <div id="memoryCats" class="cat-pills"></div>
+  <div id="memoryList" class="memory-list"></div>
+</aside>
+
+<!-- HISTORY DRAWER -->
+<div id="historyOverlay" class="drawer-overlay"></div>
+<aside id="historyDrawer" class="memory-drawer history-drawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">📅 History</h2>
+    <button id="closeHistory" class="drawer-close">✕</button>
+  </div>
+  <div id="calorieHeatmap" class="calorie-heatmap"></div>
+  <div id="historyList" class="memory-list"></div>
+</aside>
+
+<!-- TEMPLATES DRAWER -->
+<div id="templatesOverlay" class="drawer-overlay"></div>
+<aside id="templatesDrawer" class="memory-drawer templates-drawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">📋 Meal Templates</h2>
+    <button id="closeTemplates" class="drawer-close">✕</button>
+  </div>
+  <div class="drawer-hint">Save today's log as a reusable template — load it on any day to pre-fill your log instantly.</div>
+  <div id="templatesPanel" class="templates-panel"></div>
+</aside>
+
+<!-- COMPARE DRAWER -->
+<div id="compareOverlay" class="drawer-overlay"></div>
+<aside id="compareDrawer" class="memory-drawer compare-drawer">
+  <div class="drawer-header">
+    <h2 class="drawer-title">⚖ Compare Foods</h2>
+    <button id="closeCompare" class="drawer-close">✕</button>
+  </div>
+  <div class="cmp-search-wrap">
+    <div class="cmp-selected">Comparing: <strong id="compareA"></strong></div>
+    <input id="compareSearch" type="text" placeholder="Search food to compare against…" autocomplete="off">
+    <div id="compareResults" class="cmp-results"></div>
+  </div>
+  <div id="compareTable" class="compare-table"></div>
+</aside>
+
+<!-- ADD CUSTOM FOOD -->
+<div id="addFoodModal" class="modal-backdrop">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>🧪 Add Custom Food</h2>
+      <button id="closeAddFoodModal" class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Stored locally — searchable just like built-in foods.</p>
+      <div class="form-grid">
+        <div class="form-group full"><label>Food Name *</label>
+          <input id="afName" type="text" placeholder="e.g. Mum's Dal Tadka"></div>
+        <div class="form-group"><label>Category</label>
+          <input id="afCategory" type="text" placeholder="Custom" list="catList">
+          <datalist id="catList">
+            <option value="Custom"><option value="Grains"><option value="Vegetables">
+            <option value="Fruits"><option value="Meat"><option value="Seafood">
+            <option value="Eggs & Dairy"><option value="Legumes"><option value="Indian Curry">
+            <option value="Indian Dal"><option value="Indian Breakfast"><option value="Indian Sweets">
+            <option value="Fast Food"><option value="Beverages"><option value="Snacks">
+            <option value="Desserts"><option value="Nuts & Seeds">
+          </datalist></div>
+        <div class="form-group"><label>Unit</label>
+          <select id="afUnit"><option value="g">grams (g)</option><option value="ml">ml</option></select></div>
+        <div class="form-group"><label>Base Amount *</label>
+          <input id="afBase" type="number" min="1" step="any" value="100">
+          <span class="form-hint">Nutrition PER this amount</span></div>
+        <div class="form-group"><label>Calories *</label>
+          <input id="afCal" type="number" min="0" step="any" placeholder="e.g. 200"></div>
+        <div class="form-group"><label>Protein (g)</label>
+          <input id="afProt" type="number" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Carbs (g)</label>
+          <input id="afCarb" type="number" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Fat (g)</label>
+          <input id="afFat" type="number" min="0" step="any" placeholder="0"></div>
+        <div class="form-group"><label>Serving Size</label>
+          <input id="afServing" type="number" min="1" step="any" placeholder="100"></div>
+        <div class="form-group"><label>Serving Label</label>
+          <input id="afServingLabel" type="text" placeholder="e.g. 1 bowl"></div>
+      </div>
+      <div id="afCalPreview" class="cal-preview-hint"></div>
+      <label class="toggle-row">
+        <input id="afCountable" type="checkbox">
+        <span>Countable (pieces / eggs / slices…)</span>
+      </label>
+      <div id="afCountRow" class="form-grid" style="display:none;margin-top:12px">
+        <div class="form-group"><label>Unit Name</label>
+          <input id="afUnitName" type="text" placeholder="e.g. egg, piece"></div>
+        <div class="form-group"><label>Grams per piece</label>
+          <input id="afGramsEach" type="number" min="0.1" step="any" placeholder="e.g. 50"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="document.getElementById('addFoodModal').classList.remove('open')">Cancel</button>
+      <button id="saveCustomFoodBtn" class="add-btn">Save Food</button>
+    </div>
+  </div>
+</div>
+
+<!-- GOALS MODAL -->
+<div id="goalsModal" class="modal-backdrop">
+  <div class="modal-box modal-box-wide">
+    <div class="modal-header">
+      <h2>🎯 Daily Goals</h2>
+      <button id="closeGoalsModal" class="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tdee-section">
+        <div class="tdee-title">⚡ TDEE Calculator <span class="tdee-sub">auto-fill from your stats</span></div>
+        <div class="form-grid tdee-grid">
+          <div class="form-group"><label>Age</label><input id="tdeeAge" type="number" placeholder="25"></div>
+          <div class="form-group"><label>Weight (kg)</label><input id="tdeeWeight" type="number" step="0.1" placeholder="70"></div>
+          <div class="form-group"><label>Height (cm)</label><input id="tdeeHeight" type="number" placeholder="170"></div>
+          <div class="form-group"><label>Gender</label>
+            <select id="tdeeGender"><option value="male">Male</option><option value="female">Female</option></select></div>
+          <div class="form-group full"><label>Activity Level</label>
+            <select id="tdeeActivity">
+              <option value="1.2">Sedentary (desk job, no exercise)</option>
+              <option value="1.375">Light (1–3 days/week)</option>
+              <option value="1.55" selected>Moderate (3–5 days/week)</option>
+              <option value="1.725">Active (6–7 days/week)</option>
+              <option value="1.9">Very Active (physical job + training)</option>
+            </select></div>
+        </div>
+        <div class="tdee-footer">
+          <button id="calcTDEEBtn" class="tdee-calc-btn">Calculate & Fill Goals</button>
+          <span id="tdeResult" class="tdee-result"></span>
+        </div>
+      </div>
+      <div class="form-grid goals-grid">
+        <div class="form-group"><label>Calories (kcal)</label><input id="goalCalInput" type="number" placeholder="2000"></div>
+        <div class="form-group"><label>Protein (g)</label><input id="goalProtInput" type="number" placeholder="150"></div>
+        <div class="form-group"><label>Carbs (g)</label><input id="goalCarbInput" type="number" placeholder="250"></div>
+        <div class="form-group"><label>Fat (g)</label><input id="goalFatInput" type="number" placeholder="65"></div>
+        <div class="form-group full"><label>Water (ml)</label><input id="goalWaterInput" type="number" placeholder="2500"></div>
+      </div>
+      <div class="import-export-row">
+        <button id="exportBtn" class="ie-btn">⬇ Export Data</button>
+        <button id="importBtn" class="ie-btn">⬆ Import Data</button>
+        <input id="importFile" type="file" accept=".json" style="display:none">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="document.getElementById('goalsModal').classList.remove('open')">Cancel</button>
+      <button id="saveGoalsBtn" class="add-btn">Save Goals</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE MODAL -->
+<div id="noteModal" class="modal-backdrop">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header"><h2>📝 Entry Note</h2>
+      <button onclick="document.getElementById('noteModal').classList.remove('open')" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Note</label>
+        <input id="noteInput" type="text" placeholder="homemade, restaurant, pre-workout…" maxlength="80">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="cancelNoteBtn" class="cancel-btn">Cancel</button>
+      <button id="saveNoteBtn" class="add-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- BURN MODAL -->
+<div id="burnModal" class="modal-backdrop">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header"><h2>🔥 Log Exercise</h2>
+      <button id="cancelBurnBtn" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <p class="modal-hint">Burned calories subtract from your net calorie goal.</p>
+      <div class="form-group">
+        <label>Calories Burned</label>
+        <input id="burnInput" type="number" min="0" placeholder="e.g. 300">
+        <span class="form-hint">30min run ≈ 300 · 1hr gym ≈ 400 · 20min walk ≈ 100</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="document.getElementById('burnModal').classList.remove('open')">Cancel</button>
+      <button id="saveBurnBtn" class="add-btn">Log</button>
+    </div>
+  </div>
+</div>
+
+<!-- ACTIVITY CALC MODAL -->
+<div id="burnCalcModal" class="modal-backdrop">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header"><h2>⚡ Activity Calculator</h2>
+      <button id="closeBurnCalcModal" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <p class="modal-hint">Estimate calories burned from exercise using MET values.</p>
+      <div class="form-grid">
+        <div class="form-group full"><label>Activity</label>
+          <select id="activitySelect"></select></div>
+        <div class="form-group"><label>Duration (mins)</label>
+          <input id="activityMins" type="number" min="1" value="30" placeholder="30"></div>
+        <div class="form-group"><label>Body Weight (kg)</label>
+          <input id="activityWeight" type="number" step="0.1" placeholder="70"></div>
+      </div>
+      <button id="calcActivityBtn" class="tdee-calc-btn" style="margin-top:12px">Calculate</button>
+      <div id="activityResult" class="activity-result" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="document.getElementById('burnCalcModal').classList.remove('open')">Close</button>
+      <button id="logActivityBurnBtn" class="add-btn">Log This Burn</button>
+    </div>
+  </div>
+</div>
+
+<!-- BODY WEIGHT MODAL -->
+<div id="weightModal" class="modal-backdrop">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header"><h2>⚖ Log Body Weight</h2>
+      <button id="cancelWeightBtn" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Weight (kg)</label>
+          <input id="weightInput" type="number" step="0.1" min="1" placeholder="70.5"></div>
+        <div class="form-group"><label>Date</label>
+          <input id="weightDate" type="date"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="cancel-btn" onclick="document.getElementById('weightModal').classList.remove('open')">Cancel</button>
+      <button id="saveWeightBtn" class="add-btn">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- SHORTCUTS MODAL -->
+<div id="shortcutsModal" class="modal-backdrop">
+  <div class="modal-box modal-box-sm">
+    <div class="modal-header"><h2>⌨ Keyboard Shortcuts</h2>
+      <button id="closeShortcutsModal" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <table class="shortcuts-table">
+        <tr><td><kbd>/</kbd> or <kbd>Ctrl+K</kbd></td><td>Focus search</td></tr>
+        <tr><td><kbd>Ctrl+Enter</kbd></td><td>Log selected food</td></tr>
+        <tr><td><kbd>Ctrl+Z</kbd></td><td>Undo</td></tr>
+        <tr><td><kbd>↑ ↓</kbd></td><td>Navigate suggestions</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Select food / search</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>Close / dismiss</td></tr>
+        <tr><td><kbd>H</kbd></td><td>History drawer</td></tr>
+        <tr><td><kbd>M</kbd></td><td>NutriMemory</td></tr>
+        <tr><td><kbd>G</kbd></td><td>Goals modal</td></tr>
+        <tr><td><kbd>T</kbd></td><td>Meal Templates</td></tr>
+        <tr><td><kbd>W</kbd></td><td>Log body weight</td></tr>
+        <tr><td><kbd>E</kbd></td><td>Activity calorie calculator</td></tr>
+        <tr><td><kbd>?</kbd></td><td>This shortcuts panel</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE BOTTOM TAB BAR -->
+<nav class="mobile-tabs" id="mobileTabBar">
+  <div class="mobile-tab-inner">
+    <button class="mob-tab active" data-tab="search">
+      <span class="tab-icon">🔍</span>
+      <span>Search</span>
+    </button>
+    <button class="mob-tab" data-tab="log">
+      <span class="tab-icon">📋</span>
+      <span>Log</span>
+      <span class="mob-badge" id="mobLogBadge" style="display:none"></span>
+    </button>
+    <button class="mob-tab" data-tab="stats">
+      <span class="tab-icon">📊</span>
+      <span>Stats</span>
+    </button>
+    <button class="mob-tab" data-tab="water">
+      <span class="tab-icon">💧</span>
+      <span>Water</span>
+    </button>
+    <button class="mob-tab" data-tab="more">
+      <span class="tab-icon">☰</span>
+      <span>More</span>
+    </button>
+  </div>
+</nav>
+
+<!-- MOBILE MORE SHEET -->
+<div id="moreSheet" class="more-sheet">
+  <div class="more-sheet-handle"></div>
+  <div class="more-sheet-grid">
+    <button class="more-item" onclick="openHistoryDrawer();closeMoreSheet()">
+      <span class="more-icon">📅</span><span>History</span>
+    </button>
+    <button class="more-item" onclick="openMemoryDrawer();closeMoreSheet()">
+      <span class="more-icon">🧠</span><span>Memory</span>
+    </button>
+    <button class="more-item" onclick="openTemplatesDrawer();closeMoreSheet()">
+      <span class="more-icon">📋</span><span>Templates</span>
+    </button>
+    <button class="more-item" onclick="document.getElementById('logWeightBtn').click();closeMoreSheet()">
+      <span class="more-icon">⚖</span><span>Weight</span>
+    </button>
+    <button class="more-item" onclick="openGoalsModal();closeMoreSheet()">
+      <span class="more-icon">🎯</span><span>Goals</span>
+    </button>
+    <button class="more-item" onclick="document.getElementById('burnCalcBtn').click();closeMoreSheet()">
+      <span class="more-icon">⚡</span><span>Burn Calc</span>
+    </button>
+    <button class="more-item" onclick="document.getElementById('shortcutsBtn').click();closeMoreSheet()">
+      <span class="more-icon">⌨</span><span>Shortcuts</span>
+    </button>
+    <button class="more-item" onclick="document.getElementById('themeBtn').click();closeMoreSheet()">
+      <span class="more-icon">🎨</span><span>Theme</span>
+    </button>
+  </div>
+</div>
+<div id="moreSheetOverlay" class="more-sheet-overlay" onclick="closeMoreSheet()"></div>
+
+<div id="toastContainer" class="toast-container"></div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
