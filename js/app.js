@@ -50,6 +50,7 @@ let portionMemory  = _load('nutrilog_portion_memory') || {};
 let savedPulseTimer= null;
 let compareFood    = null;
 let mealTemplatesCache = {};
+let waterUndoStack = _load('nutrilog_water_undo') || [];
 const state = {
   logEntries,
   totals: dailyTotals,
@@ -113,13 +114,16 @@ function closeModalById(id) { g(id)?.classList.remove('open'); }
     localStorage.setItem('nutrilog_date', today);
     localStorage.removeItem('nutrilog_log_today');
     localStorage.removeItem('nutrilog_water_today');
+    localStorage.removeItem('nutrilog_water_undo');
     localStorage.removeItem('nutrilog_burned_today');
     _updateStreak(today);
     waterMl = caloriesBurned = 0;
+    waterUndoStack = [];
   } else {
     if (!saved) localStorage.setItem('nutrilog_date', today);
     logEntries     = _load('nutrilog_log_today') || [];
     waterMl        = parseInt(localStorage.getItem('nutrilog_water_today') || '0');
+    waterUndoStack = _load('nutrilog_water_undo') || [];
     caloriesBurned = parseInt(localStorage.getItem('nutrilog_burned_today') || '0');
   }
   recomputeTotals();
@@ -792,14 +796,15 @@ function updateMotivationalMsg() {
 ══════════════════════════════════════════════════════ */
 function updateWaterUI() {
   const pct = Math.min(100, (waterMl / waterGoal) * 100);
+  const level = 100 - pct;
 
   // Wave animation
+  const wrap = g('waterWaveWrap');
   const bg = g('waterWaveBg');
-  if (bg) bg.style.height = pct + '%';
+  if (bg) bg.style.transform = `translateY(${level}%)`;
   const w1 = g('waterWave1'), w2 = g('waterWave2');
-  const waveBottom = pct + '%';
-  if (w1) w1.style.bottom = waveBottom;
-  if (w2) w2.style.bottom = waveBottom;
+  if (w1) w1.style.transform = `translateY(${level}%)`;
+  if (w2) w2.style.transform = `translateY(${level}%)`;
   const pt = g('waterPctText');
   if (pt) pt.textContent = pct >= 5 ? Math.round(pct) + '%' : '';
 
@@ -811,6 +816,14 @@ function updateWaterUI() {
   if (glasses) glasses.innerHTML = Array.from({length:10}, (_,i) =>
     `<button class="water-glass${i < filled ? ' full' : ''}" data-action="add-water-glass" data-water-index="${i}" data-water-filled="${filled}" title="${i < filled ? 'Remove 250ml' : 'Add 250ml'}">💧</button>`
   ).join('');
+
+  const undoBtn = g('waterUndoBtn');
+  if (undoBtn) {
+    const last = waterUndoStack.at(-1);
+    undoBtn.disabled = !last;
+    undoBtn.title = last ? `Undo ${last > 0 ? '+' : ''}${last}ml` : 'No water change to undo';
+  }
+  if (wrap) wrap.classList.toggle('goal-reached', waterMl >= waterGoal);
 }
 
 function addWaterGlass(idx, filled) {
@@ -824,16 +837,49 @@ function addWaterGlass(idx, filled) {
   }
 }
 window.addWaterGlass = addWaterGlass;
-function addWater(ml){
-  waterMl=Math.max(0,waterMl+ml); localStorage.setItem('nutrilog_water_today',waterMl); updateWaterUI();
-  if(ml>0&&waterMl>=waterGoal&&waterMl-ml<waterGoal) showToast('💧 Water goal reached! 🎉');
-  else if(ml>0) showToast(`+${ml}ml · ${(waterMl/1000).toFixed(1)}L today`);
+function addWater(ml, { trackUndo = true } = {}){
+  const prev = waterMl;
+  waterMl = Math.max(0, waterMl + ml);
+  const applied = waterMl - prev;
+  if (!applied) return;
+
+  const wrap = g('waterWaveWrap');
+  wrap?.classList.remove('pulse-up','pulse-down');
+  void wrap?.offsetWidth;
+  wrap?.classList.add(applied > 0 ? 'pulse-up' : 'pulse-down');
+  setTimeout(() => wrap?.classList.remove('pulse-up','pulse-down'), 520);
+
+  if (trackUndo) {
+    waterUndoStack.push(applied);
+    if (waterUndoStack.length > 30) waterUndoStack.shift();
+    _save('nutrilog_water_undo', waterUndoStack);
+  }
+  localStorage.setItem('nutrilog_water_today',waterMl);
+  _save('nutrilog_water_undo',waterUndoStack);
+  updateWaterUI();
+
+  if (applied > 0 && waterMl >= waterGoal && prev < waterGoal) {
+    showToast('💧 Water goal reached! 🎉');
+  } else {
+    const sign = applied > 0 ? '+' : '';
+    showToast(`${sign}${applied}ml · ${(waterMl/1000).toFixed(1)}L today`);
+  }
 }
 window.addWater=addWater;
 g('waterAdd250')?.addEventListener('click',()=>addWater(250));
 g('waterAdd500')?.addEventListener('click',()=>addWater(500));
 g('waterAdd750')?.addEventListener('click',()=>addWater(750));
 g('waterCustom')?.addEventListener('click',()=>{const a=parseInt(prompt('Add water (ml):','330'));if(a>0)addWater(a);});
+g('waterUndoBtn')?.addEventListener('click', () => {
+  const last = waterUndoStack.pop();
+  if (!last) return;
+  _save('nutrilog_water_undo', waterUndoStack);
+  addWater(-last, { trackUndo: false });
+});
+g('waterResetBtn')?.addEventListener('click', () => {
+  if (!waterMl) return;
+  addWater(-waterMl);
+});
 
 /* ══════════════════════════════════════════════════════
    CALORIES BURNED
@@ -1678,19 +1724,6 @@ document.addEventListener('touchend', e => {
   }
   lastTap = now;
 }, { passive: true });
-
-/* ══════════════════════════════════════════════════════
-   QOL: WATER GOAL CELEBRATION
-══════════════════════════════════════════════════════ */
-const _origAddWater = addWater;
-window.addWater = function(ml) {
-  const wasBefore = waterMl < waterGoal;
-  _origAddWater(ml);
-  if (wasBefore && waterMl >= waterGoal) {
-    // Big celebration toast
-    setTimeout(() => showToast('🎉 Water goal reached! Great hydration!'), 200);
-  }
-};
 
 /* ══════════════════════════════════════════════════════
    QOL: AUTOFOCUS AFTER LOG
