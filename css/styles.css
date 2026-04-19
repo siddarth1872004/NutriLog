@@ -38,6 +38,7 @@
   --trans: all .18s cubic-bezier(.4,0,.2,1);
   --shadow: 0 2px 20px rgba(0,0,0,.4);
   --glow-accent: 0 0 20px rgba(108,99,255,.25);
+  --app-vh: 100vh;
 }
 
 [data-theme="light"] {
@@ -60,8 +61,9 @@
 html { scroll-behavior:smooth; -webkit-text-size-adjust:100%; }
 body {
   font-family:'Syne',sans-serif; background:var(--bg); color:var(--text);
-  min-height:100vh; line-height:1.5; -webkit-font-smoothing:antialiased;
+  min-height:var(--app-vh); line-height:1.5; -webkit-font-smoothing:antialiased;
   overscroll-behavior-y:none;
+  font-size:clamp(13px, 1.45vw, 16px);
 }
 body:not(.app-ready) .app-header,
 body:not(.app-ready) .app-main { opacity:0; transform:translateY(8px) scale(.995); }

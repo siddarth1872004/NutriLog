@@ -94,17 +94,13 @@ function setVal(id,v)  { const e=document.getElementById(id); if(e) e.value=v; }
 function setW(id,pct)  { const e=document.getElementById(id); if(e) e.style.width=Math.min(100,pct)+'%'; }
 function g(id)         { return document.getElementById(id); }
 function closeModalById(id) { g(id)?.classList.remove('open'); }
-function initSplashScreen() {
-  const splash = g('splashScreen');
-  const finish = () => {
-    document.body.classList.add('app-ready');
-    splash?.classList.add('hide');
-    setTimeout(() => splash?.remove(), 700);
-  };
-  if (document.readyState === 'complete') setTimeout(finish, 500);
-  else window.addEventListener('load', () => setTimeout(finish, 500), { once: true });
-  setTimeout(finish, 2200); // safety fallback
+function syncViewportUnit() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--app-vh', `${vh * 100}px`);
 }
+syncViewportUnit();
+window.addEventListener('resize', syncViewportUnit, { passive: true });
+window.addEventListener('orientationchange', syncViewportUnit, { passive: true });
 
 /* ─── Init: day rollover + load today ─────────────── */
 (function init() {
