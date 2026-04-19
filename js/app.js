@@ -94,6 +94,8 @@ function setVal(id,v)  { const e=document.getElementById(id); if(e) e.value=v; }
 function setW(id,pct)  { const e=document.getElementById(id); if(e) e.style.width=Math.min(100,pct)+'%'; }
 function g(id)         { return document.getElementById(id); }
 function closeModalById(id) { g(id)?.classList.remove('open'); }
+const isMobileUI = () => window.matchMedia('(max-width: 640px)').matches;
+const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 function syncViewportUnit() {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--app-vh', `${vh * 100}px`);
@@ -101,8 +103,8 @@ function syncViewportUnit() {
 function initSplashScreen() {
   const splash = g('splashScreen');
   if (!splash) return;
-  const isMobile = window.matchMedia('(max-width: 640px)').matches;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = isMobileUI();
+  const reduceMotion = prefersReducedMotion();
   if (isMobile || reduceMotion) {
     splash.remove();
     document.body.classList.add('app-ready');
@@ -1476,19 +1478,17 @@ g('shortcutsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)
    MOBILE TAB SWITCHING — 5-tab with More sheet
 ══════════════════════════════════════════════════════ */
 (function(){
-  const isMobile = () => window.innerWidth <= 640;
-
   // On desktop, always show both columns
-  if (!isMobile()) {
+  if (!isMobileUI()) {
     document.querySelector('.left-col')?.classList.add('active');
     document.querySelector('.right-col')?.classList.add('active');
   }
 
   const panels = {
     search: () => showCol('left',  () => g('foodInput')?.focus()),
-    log:    () => showCol('right', () => g('logEntries')?.scrollIntoView({behavior:'smooth',block:'start'})),
-    stats:  () => showCol('right', () => g('caloriesRemaining')?.scrollIntoView({behavior:'smooth',block:'start'})),
-    water:  () => showCol('left',  () => setTimeout(()=>g('waterWaveWrap')?.scrollIntoView({behavior:'smooth',block:'center'}),80)),
+    log:    () => showCol('right', () => g('logEntries')?.scrollIntoView({behavior: prefersReducedMotion() ? 'auto' : 'smooth', block:'start'})),
+    stats:  () => showCol('right', () => g('caloriesRemaining')?.scrollIntoView({behavior: prefersReducedMotion() ? 'auto' : 'smooth', block:'start'})),
+    water:  () => showCol('left',  () => setTimeout(()=>g('waterWaveWrap')?.scrollIntoView({behavior: prefersReducedMotion() ? 'auto' : 'smooth', block:'center'}),80)),
     more:   () => openMoreSheet(),
   };
 
@@ -1502,7 +1502,7 @@ g('shortcutsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)
   }
 
   function activateTab(name) {
-    if (!isMobile() && name !== 'more') {
+    if (!isMobileUI() && name !== 'more') {
       // On desktop just call the action but don't hide panels
       if (name === 'more') openMoreSheet();
       return;
@@ -1517,19 +1517,23 @@ g('shortcutsModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)
 
   // Restore last tab
   const saved = localStorage.getItem('nutrilog_mobile_tab') || 'search';
-  if (isMobile()) activateTab(saved);
+  if (isMobileUI()) activateTab(saved);
   else { document.querySelector('.left-col')?.classList.add('active'); document.querySelector('.right-col')?.classList.add('active'); }
 
   document.querySelectorAll('.mob-tab').forEach(t =>
     t.addEventListener('click', () => activateTab(t.dataset.tab))
   );
 
+  let resizeRaf = 0;
   window.addEventListener('resize', () => {
-    if (!isMobile()) {
-      document.querySelector('.left-col')?.classList.add('active');
-      document.querySelector('.right-col')?.classList.add('active');
-    }
-  });
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(() => {
+      if (!isMobileUI()) {
+        document.querySelector('.left-col')?.classList.add('active');
+        document.querySelector('.right-col')?.classList.add('active');
+      }
+    });
+  }, { passive: true });
 })();
 
 /* ── More sheet ────────────────────────────────────── */
@@ -1675,6 +1679,7 @@ initSplashScreen();
    QOL: RIPPLE EFFECT ON BUTTONS
 ══════════════════════════════════════════════════════ */
 document.addEventListener('click', e => {
+  if (isMobileUI() || prefersReducedMotion()) return;
   const btn = e.target.closest('.add-btn, .search-btn, .mem-use-btn, .tdee-calc-btn, .tmpl-load-btn, .water-btns button');
   if (!btn) return;
   const r = document.createElement('span');
@@ -1708,12 +1713,14 @@ window.updateTotals = updateTotalsAnimated;
 ══════════════════════════════════════════════════════ */
 let swipeStart = null;
 document.addEventListener('touchstart', e => {
+  if (prefersReducedMotion()) return;
   const entry = e.target.closest('.log-entry[data-id]');
   if (!entry) return;
   swipeStart = { x: e.touches[0].clientX, id: parseInt(entry.dataset.id), el: entry };
 }, { passive: true });
 
 document.addEventListener('touchend', e => {
+  if (prefersReducedMotion()) return;
   if (!swipeStart) return;
   const dx = e.changedTouches[0].clientX - swipeStart.x;
   if (dx < -80) {
@@ -1729,9 +1736,11 @@ document.addEventListener('touchend', e => {
 ══════════════════════════════════════════════════════ */
 let pullStart = 0;
 window.addEventListener('touchstart', e => {
+  if (prefersReducedMotion()) return;
   if (window.scrollY === 0) pullStart = e.touches[0].clientY;
 }, { passive: true });
 window.addEventListener('touchend', e => {
+  if (prefersReducedMotion()) return;
   if (pullStart === 0) return;
   const dy = e.changedTouches[0].clientY - pullStart;
   if (dy > 80 && window.scrollY === 0) {
@@ -1763,6 +1772,7 @@ g('countInput')?.addEventListener('focus', function() { this.select(); });
 /* QoL: double-tap log entry to edit (only if no swipe) */
 let lastTap = 0;
 document.addEventListener('touchend', e => {
+  if (prefersReducedMotion()) return;
   const entry = e.target.closest('.log-entry[data-id]');
   if (!entry) return;
   if (swipeStart) return; // swipe was in progress

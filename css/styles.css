@@ -216,6 +216,28 @@ body.app-ready .app-main {
 .mob-tab.active { color:var(--accent2); }
 .mob-tab.active .tab-icon { transform:translateY(-2px); }
 @media (max-width:640px) {
+  :root { --pad: 12px; --gap: 10px; }
+
+  .app-header {
+    height:auto;
+    min-height:52px;
+    padding:8px 10px;
+    align-items:flex-start;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .header-left,
+  .header-right { width:100%; }
+  .header-right {
+    justify-content:flex-start;
+    overflow-x:auto;
+    padding-bottom:2px;
+    scrollbar-width:none;
+  }
+  .header-right::-webkit-scrollbar { display:none; }
+  .icon-btn,
+  .memory-btn { height:34px; }
+
   .mobile-tabs { display:block; }
   body { padding-bottom:calc(56px + env(safe-area-inset-bottom,0px)); }
   body::before,
@@ -921,6 +943,20 @@ body.app-ready .app-main {
   .search-card, .portion-card, .totals-card, .log-card,
   .water-card, .bodyweight-card { border-radius:var(--r); margin:0; }
 
+  .left-col, .right-col {
+    padding:10px var(--pad) calc(10px + env(safe-area-inset-bottom,0px));
+    gap:10px;
+  }
+
+  .card-actions {
+    flex-wrap:wrap;
+  }
+  .icon-action-btn {
+    flex:1 1 calc(50% - 3px);
+    width:auto;
+    min-height:40px;
+  }
+
   /* Bigger touch targets */
   .ea-btn, .hist-entry-btn, .mem-pin-btn, .mem-edit-btn, .mem-del-btn {
     width:32px; height:32px;
@@ -939,6 +975,8 @@ body.app-ready .app-main {
 
   /* Suggestions full-screen feel */
   .suggestions { max-height:min(55vh,320px); }
+  .search-row { gap:8px; }
+  .search-btn { min-width:92px; }
 
   /* Cal ring section */
   .cal-ring-section { flex-direction:column; align-items:flex-start; gap:12px; }
@@ -946,6 +984,8 @@ body.app-ready .app-main {
 
   /* Water wave */
   .water-wave-wrap { height:60px; }
+  .water-btns { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+  .water-btns button { min-height:40px; }
 
   /* Memory drawer full width */
   .memory-drawer { width:100%; border-left:none; border-right:none; }
@@ -995,6 +1035,18 @@ body.app-ready .app-main {
 
   /* Swipe affordance for drawers */
   .drawer-header { cursor:grab; }
+}
+
+@media (max-width:420px) {
+  .search-row {
+    flex-direction:column;
+  }
+  .search-btn {
+    width:100%;
+  }
+  .water-btns {
+    grid-template-columns:1fr;
+  }
 }
 
 /* ── More sheet (bottom sheet on mobile) ───────────── */
