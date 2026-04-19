@@ -1672,6 +1672,7 @@ renderMemoryCount();
 updateWeightDisplay();
 renderWeightChart();
 renderTemplatesPanel();
+initSplashScreen();
 
 
 /* ══════════════════════════════════════════════════════
