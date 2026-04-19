@@ -874,6 +874,8 @@ function addCustomWater() {
   if(a>0)addWater(a);
 }
 function undoWater() {
+g('waterCustom')?.addEventListener('click',()=>{const a=parseInt(prompt('Add water (ml):','330'));if(a>0)addWater(a);});
+g('waterUndoBtn')?.addEventListener('click', () => {
   const last = waterUndoStack.pop();
   if (!last) return;
   _save('nutrilog_water_undo', waterUndoStack);
