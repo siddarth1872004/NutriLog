@@ -3,29 +3,29 @@
    Clean, readable, animated, mobile-first
 ══════════════════════════════════════════════════════ */
 :root {
-  --bg:          #0b0c10;
-  --bg2:         #13141a;
-  --bg3:         #1a1c24;
-  --bg4:         #22242e;
-  --bg5:         #2a2c38;
-  --border:      #252730;
-  --border2:     #32364a;
-  --text:        #e2e4ef;
-  --text2:       #8b8fa8;
-  --text3:       #52566a;
-  --accent:      #6c63ff;
-  --accent2:     #9d97ff;
-  --accent-soft: rgba(108,99,255,.12);
+  --bg:          #090f13;
+  --bg2:         #101a22;
+  --bg3:         #142330;
+  --bg4:         #1a2c3b;
+  --bg5:         #223749;
+  --border:      #1f3445;
+  --border2:     #2d4b63;
+  --text:        #e4f6ff;
+  --text2:       #8eb5ca;
+  --text3:       #5f869d;
+  --accent:      #00d1b2;
+  --accent2:     #ff4fc3;
+  --accent-soft: rgba(0,209,178,.16);
   --cal:         #ff5e5e;
   --cal-soft:    rgba(255,94,94,.1);
   --prot:        #3ecfca;
   --prot-soft:   rgba(62,207,202,.1);
   --carb:        #f5a623;
   --carb-soft:   rgba(245,166,35,.1);
-  --fat:         #b39dff;
-  --fat-soft:    rgba(179,157,255,.1);
-  --water:       #29b6f6;
-  --water-soft:  rgba(41,182,246,.1);
+  --fat:         #f7b267;
+  --fat-soft:    rgba(247,178,103,.12);
+  --water:       #42d2ff;
+  --water-soft:  rgba(66,210,255,.12);
   --green:       #4debb5;
   --red:         #ff6b6b;
   --orange:      #fd7e44;
@@ -64,41 +64,71 @@ body {
   min-height:var(--app-vh); line-height:1.5; -webkit-font-smoothing:antialiased;
   overscroll-behavior-y:none;
   font-size:clamp(13px, 1.45vw, 16px);
+  position:relative;
+  overflow-x:hidden;
+}
+body::before, body::after {
+  content:''; position:fixed; inset:-20vh -20vw; pointer-events:none; z-index:-1;
+  background:
+    radial-gradient(40vw 28vh at 16% 20%, rgba(0,209,178,.14), transparent 60%),
+    radial-gradient(34vw 26vh at 85% 72%, rgba(255,79,195,.14), transparent 62%),
+    radial-gradient(28vw 24vh at 60% 8%, rgba(66,210,255,.12), transparent 60%);
+  animation:bgDrift 18s ease-in-out infinite alternate;
+}
+body::after {
+  filter:blur(18px);
+  opacity:.65;
+  animation-duration:24s;
+}
+@keyframes bgDrift {
+  0%   { transform:translate3d(0,0,0) scale(1); }
+  100% { transform:translate3d(2vw,-1.8vh,0) scale(1.04); }
 }
 body:not(.app-ready) .app-header,
-body:not(.app-ready) .app-main { opacity:0; transform:translateY(8px) scale(.995); }
-.app-header, .app-main { transition:opacity .45s ease, transform .45s ease; }
+body:not(.app-ready) .app-main {
+  opacity:0;
+  transform:translateY(10px) scale(.995);
+  filter:blur(2px);
+}
+body.app-ready .app-header,
+body.app-ready .app-main {
+  transition:opacity .7s ease, transform .7s ease, filter .7s ease;
+}
 
-/* ══════════════════════════════════════════════════════
-   SPLASH SCREEN
-══════════════════════════════════════════════════════ */
 .splash-screen {
-  position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center;
-  background:radial-gradient(1200px 450px at 10% 20%, rgba(108,99,255,.16), transparent 55%),
-             radial-gradient(900px 400px at 90% 80%, rgba(41,182,246,.14), transparent 55%),
-             linear-gradient(160deg, #0a0b11 0%, #101320 100%);
-  transition:opacity .55s ease, visibility .55s ease;
+  position:fixed; inset:0; z-index:9999; display:grid; place-items:center;
+  background:linear-gradient(145deg, #081117 0%, #0e1a24 45%, #111a27 100%);
+  transition:opacity .8s ease, visibility .8s ease;
 }
 .splash-screen.hide { opacity:0; visibility:hidden; pointer-events:none; }
-.splash-bg-orb { position:absolute; border-radius:50%; filter:blur(18px); opacity:.65; animation:orbFloat 4.8s ease-in-out infinite; }
-.splash-bg-orb.orb-1 { width:190px; height:190px; background:rgba(108,99,255,.38); left:18%; top:24%; }
-.splash-bg-orb.orb-2 { width:220px; height:220px; background:rgba(41,182,246,.28); right:16%; bottom:18%; animation-delay:-1.5s; }
-.splash-content { position:relative; text-align:center; }
-.splash-logo {
-  font-size:2rem; font-weight:800; letter-spacing:-.03em; margin-bottom:8px;
-  background:linear-gradient(130deg,var(--accent2),var(--water)); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  animation:logoPulse 1.4s ease-in-out infinite alternate;
+.splash-grid {
+  position:absolute; inset:0; opacity:.24;
+  background:
+    linear-gradient(rgba(66,210,255,.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,79,195,.14) 1px, transparent 1px);
+  background-size:44px 44px;
+  animation:gridShift 14s linear infinite;
 }
-.splash-tag { color:#97a1c8; font-size:.82rem; margin-bottom:16px; letter-spacing:.03em; }
-.splash-loader { width:190px; height:6px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden; }
+@keyframes gridShift {
+  from { transform:translateY(0); }
+  to { transform:translateY(44px); }
+}
+.splash-content { position:relative; text-align:center; padding:0 20px; }
+.splash-logo {
+  font-size:clamp(2.1rem, 7vw, 3.5rem); font-weight:800; letter-spacing:-.03em;
+  background:linear-gradient(120deg,var(--accent),var(--accent2),var(--water));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  animation:logoBreath 2.1s ease-in-out infinite;
+}
+.splash-tag { margin-top:10px; color:var(--text2); font-size:.86rem; letter-spacing:.08em; }
+.splash-loader { width:min(260px, 70vw); height:6px; margin:16px auto 0; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; }
 .splash-loader span {
   display:block; height:100%; width:38%; border-radius:inherit;
-  background:linear-gradient(90deg, var(--accent), var(--water));
-  animation:splashLoad 1.2s ease-in-out infinite;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--water));
+  animation:splashLoad 1.35s ease-in-out infinite;
 }
-@keyframes splashLoad { 0%{transform:translateX(-110%)} 100%{transform:translateX(300%)} }
-@keyframes logoPulse { from{filter:drop-shadow(0 0 0 rgba(108,99,255,.2))} to{filter:drop-shadow(0 0 16px rgba(108,99,255,.42))} }
-@keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes splashLoad { 0%{transform:translateX(-120%)} 100%{transform:translateX(310%)} }
+@keyframes logoBreath { 0%,100%{filter:drop-shadow(0 0 6px rgba(0,209,178,.26));} 50%{filter:drop-shadow(0 0 18px rgba(255,79,195,.26));} }
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border2); border-radius:99px; }

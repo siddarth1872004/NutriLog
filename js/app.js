@@ -98,7 +98,23 @@ function syncViewportUnit() {
   const vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--app-vh', `${vh * 100}px`);
 }
+function initSplashScreen() {
+  const splash = g('splashScreen');
+  if (!splash) return;
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    document.body.classList.add('app-ready');
+    splash.classList.add('hide');
+    setTimeout(() => splash.remove(), 900);
+  };
+  if (document.readyState === 'complete') setTimeout(finish, 2400);
+  else window.addEventListener('load', () => setTimeout(finish, 2400), { once: true });
+  setTimeout(finish, 5200);
+}
 syncViewportUnit();
+initSplashScreen();
 window.addEventListener('resize', syncViewportUnit, { passive: true });
 window.addEventListener('orientationchange', syncViewportUnit, { passive: true });
 
@@ -1399,7 +1415,7 @@ g('exportBtn')?.addEventListener('click',()=>{
   const data={version:3,exported:new Date().toISOString(),goals,waterGoal,mealGroups,savedFoods,history,userFoods:USER_DB,recents:recentFoods,templates:mealTemplates,bodyWeight,streak:streakData,
     today:{date:todayKey(),entries:logEntries,waterMl,burned:caloriesBurned}};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`nutrilog-${todayKey()}.json`;a.click();URL.revokeObjectURL(url);showToast('Data exported ✓');
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`logyourcals-${todayKey()}.json`;a.click();URL.revokeObjectURL(url);showToast('Data exported ✓');
 });
 g('importBtn')?.addEventListener('click',()=>g('importFile')?.click());
 g('importFile')?.addEventListener('change',function(e){
@@ -1432,7 +1448,7 @@ g('importFile')?.addEventListener('change',function(e){
 g('copyLogBtn')?.addEventListener('click',()=>{
   if(!logEntries.length){showToast('Nothing to copy','warn');return;}
   const date=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
-  let text=`NutriLog — ${date}\n${'─'.repeat(36)}\n\n`;
+  let text=`LogYourCals — ${date}\n${'─'.repeat(36)}\n\n`;
   const groups={};mealGroups.forEach(m=>groups[m]=[]);groups['Other']=[];
   logEntries.forEach(e=>{const g2=mealGroups.includes(e.meal)?e.meal:'Other';groups[g2].push(e);});
   [...mealGroups,'Other'].forEach(meal=>{const ents=groups[meal];if(!ents.length)return;text+=`${meal.toUpperCase()}\n`;ents.forEach(e=>text+=`  • ${e.name} — ${e.portion} → ${e.cal} kcal | ${e.prot}g P | ${e.carb}g C | ${e.fat}g F${e.note?' ('+e.note+')':''}\n`);text+='\n';});
